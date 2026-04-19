@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Owner {
+  id         String    @id @default(uuid())
+  firstName  String
+  lastName   String
+  phone      String
+  email      String?
+  address    String?
+  createdAt  DateTime  @default(now())
+  patients   Patient[]
+}
+
+model Patient {
+  id            String         @id @default(uuid())
+  ownerId       String
+  owner         Owner          @relation(fields: [ownerId], references: [id])
+  name          String
+  species       String
+  breed         String?
+  sex           String
+  birthDate     DateTime?
+  weightKg      Float?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  vaccines      Vaccine[]
+  exams         Exam[]
+  labResults    LabResult[]
+  prescriptions Prescription[]
+  appointments  Appointment[]
+  surgeries     Surgery[]
+}
+
+model Vaccine {
+  id          String    @id @default(uuid())
+  patientId   String
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  name        String
+  dateGiven   DateTime
+  nextDueDate DateTime?
+  batchNumber String?
+  notes       String?
+}
+
+model Exam {
+  id            String         @id @default(uuid())
+  patientId     String
+  patient       Patient        @relation(fields: [patientId], references: [id])
+  date          DateTime
+  reason        String
+  diagnosis     String?
+  notes         String?
+  vetName       String?
+  prescriptions Prescription[]
+}
+
+model LabResult {
+  id        String   @id @default(uuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  date      DateTime
+  testName  String
+  result    String?
+  status    String
+  fileUrl   String?
+}
+
+model Prescription {
+  id         String   @id @default(uuid())
+  patientId  String
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  examId     String?
+  exam       Exam?    @relation(fields: [examId], references: [id])
+  medication String
+  dosage     String?
+  frequency  String?
+  startDate  DateTime?
+  endDate    DateTime?
+  notes      String?
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  scheduledAt DateTime
+  reason      String?
+  status      String   @default("pending")
+  notes       String?
+}
+
+model Surgery {
+  id            String   @id @default(uuid())
+  patientId     String
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  date          DateTime
+  procedureName String
+  vetName       String?
+  notes         String?
+  outcome       String?
+}
